@@ -9,7 +9,7 @@ class Cart(models.Model) :
         return self.cart_id
 
 class CartItem(models.Model) : 
-    product = models.ForeignKey(Product , on_delete=models.CASCADE)
+    product = models.OneToOneField(Product , on_delete=models.CASCADE)
     cart = models.ForeignKey(Cart , on_delete= models.CASCADE)
     quantity = models.IntegerField()
     is_active = models.BooleanField(default=True)
@@ -17,5 +17,5 @@ class CartItem(models.Model) :
     def sub_calculte(self) : 
         return self.product.price * self.quantity
     def __str__(self) :
-        return self.product.product_name
+        return f"{self.product.product_name}"
     

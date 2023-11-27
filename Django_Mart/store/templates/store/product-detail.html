@@ -41,9 +41,13 @@
 						{% endif %}
 						<hr>
 
-
-						<a href="#" class="btn  btn-primary"> <span class="text">Add to cart</span> <i
-								class="fas fa-shopping-cart"></i> </a>
+						<form method="post">
+							{% csrf_token %}
+						<a href="{% url 'add_to_cart' context.id %}" class="btn  btn-primary"> 
+							<span class="text">Add to cart</span>
+						<i class="fas fa-shopping-cart"></i> </a>
+						</form>
+						
 					</article> <!-- product-info-aside .// -->
 				</main> <!-- col.// -->
 			</div> <!-- row.// -->
