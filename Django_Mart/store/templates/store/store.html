@@ -73,7 +73,11 @@
 						<del class="price-old">${{p.price}}</del>
 					</div> <!-- price-wrap.// -->
 				</div>
-				<a href="#" class="btn btn-block btn-primary">Added to cart </a>
+				<form action="post">
+					{% csrf_token %}
+
+					<a href="{% url 'add_to_cart' p.id %}" class="btn btn-block btn-primary">Added to cart </a>
+				</form>
 			</figcaption>
 		</figure>
 	</div> <!-- col.// -->
