@@ -4,6 +4,8 @@ from django.core.paginator import Paginator
 # Create your views here.
 
 def store(request , category_slug=None) : 
+    if not request.session.session_key:
+        request.session.create()
     if category_slug : 
         categorie = get_object_or_404(Category , slug = category_slug)
         # print(categorie)
