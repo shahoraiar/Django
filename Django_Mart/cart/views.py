@@ -125,3 +125,31 @@ def remove(request , product_id) :
         cart_item.delete()
 
     return redirect('cart')
+
+def checkout(request) : 
+    print(request.POST)
+    cart_item = None
+    tax = 0 
+    total = 0
+    grand_total = 0
+    if not request.session.session_key:
+        request.session.create()
+    session_id = request.session.session_key #session id nie aslam
+
+    if request.user.is_authenticated : 
+        # print('kaj for user') 
+        cart_item = CartItem.objects.filter(user = request.user)
+        for item in cart_item : 
+            total += item.product.price * item.quantity
+    else : 
+        # print('kaj for session')
+        cart_id = Cart.objects.filter(cart_id = session_id).exists() #session id database e ace ki na
+        if cart_id : 
+            modelid = Cart.objects.get(cart_id = session_id) # model anlam  
+            cart_item = CartItem.objects.filter(cart = modelid)
+            for item in cart_item : 
+                total += item.product.price * item.quantity
+    tax = (2*total)/100 # 2% vat
+    grand_total = total + tax
+    return render(request , 'cart/place-order.html' , {'cart_item' : cart_item , 'total': total, 'tax':tax,
+                                                'grand_total' : grand_total ,})
