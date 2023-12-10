@@ -1,3 +1,75 @@
+class Order(models.Model) :
+    STATUS = (
+        ('new' , 'NEW'),
+        ('accepted' , 'ACCEPTED'),
+        ('completed' , 'COMPLETED'),
+        ('cancelled' , 'CANCELLED')
+    ) 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # payment = models.ForeignKey(Payment , on_delete=models.CASCADE , null=True)
+    order_no = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=100)
+    email = models.EmailField(max_length=50)
+    address_line1 = models.CharField(max_length=100)
+    address_line2 = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    order_note = models.CharField(max_length=100)
+    order_total = models.FloatField()
+    tax = models.FloatField()
+    status = models.CharField(max_length=30 , choices=STATUS, default= 'New')
+    ip = models.CharField(max_length=100,blank=True , null=True)
+    is_ordered = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) :
+        return self.user.username
+
+class OrderForm(forms.ModelForm) : 
+    class Meta : # class e extra add korte
+        model = Order
+        fields = ['first_name', 'last_name', 'phone', 'email', 'address_line1', 'address_line2',
+                  'city' ,'country', 'state', 'order_note']
+
+def place_order(request) : 
+    print(request.POST) 
+    cart_item = None
+    tax = 0 
+    total = 0
+    grand_total = 0
+    if request.user.is_authenticated : 
+        print('order form fill up') 
+        cart_item = CartItem.objects.filter(user = request.user)
+        if cart_item.count() < 1 : 
+            return redirect('store')
+        # print(cart_item)
+        for item in cart_item : 
+            total += item.product.price * item.quantity
+        tax = (2*total)/100 # 2% vat
+        grand_total = total + tax
+        if request.method == 'POST' : 
+            form = OrderForm(request.POST)
+            if form.is_valid() : 
+                form.instance.user = request.user
+                form.instance.order_total = grand_total
+                form.instance.tax = tax
+                form.instance.ip = request.META.get('REMOTE_ADDR')
+                saved_intanse = form.save() # data base e order form save hobe , er por order_number pabo
+                form.instance.order_number = saved_intanse.id
+                form.save()
+                print('form print ' , form)
+                return redirect('order_complete')
+        return render(request , 'orders/place-order.html' , {'cart_item' : cart_item , 
+                                                'total': total, 'tax':tax,
+                                                'grand_total' : grand_total ,})
+        # return redirect('order_complete')
+    else : 
+        return redirect('signin')
+
+
 {% extends "base.html" %}
 {% load static %}
 {% block navbar %}
@@ -157,11 +229,11 @@
 									<div class="form-row">
 										<div class="col form-group">
 											<label for="">Address Line 1</label>
-											<input type="text" name="address_line_1" class="form-control" required>
+											<input type="text" name="address_line1" class="form-control" required>
 										</div>
 										<div class="col form-group">
 											<label for="">Address Line 2</label>
-											<input type="text" name="address_line_2" class="form-control">
+											<input type="text" name="address_line2" class="form-control">
 										</div>
 									</div>
 									<div class="form-row">
@@ -186,8 +258,8 @@
 
 							</div>
 						</div>
-						<input type="submit" value="SUBMIT">
-					</form>
+						<!-- <input type="submit" value="SUBMIT"> -->
+					
 					</article> <!-- card.// -->
 
 
@@ -214,8 +286,9 @@
 							<p class="text-center mb-3">
 								<img src="{% static './images/misc/payments.png' %}" height="26">
 							</p>
-							<a href="./place-order.html" class="btn btn-primary btn-block"> Place Order </a>
-
+							<!-- <a href="{% url 'place_order' %}" class="btn btn-primary btn-block"> Place Order </a> -->
+							<button type="submit" class="btn btn-primary btn-block" > Place Order </button>
+</form>
 						</div> <!-- card-body.// -->
 					</div> <!-- card.// -->
 				</aside> <!-- col.// -->
@@ -233,3 +306,4 @@
 
 	<!-- ========================= SECTION CONTENT END// ========================= -->
 	{% endblock navbar %}
+

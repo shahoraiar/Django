@@ -19,7 +19,7 @@ class Order(models.Model) :
         ('cancelled' , 'CANCELLED')
     ) 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    payment = models.ForeignKey(Payment , on_delete=models.CASCADE)
+    # payment = models.ForeignKey(Payment , on_delete=models.CASCADE , null=True)
     order_no = models.CharField(max_length=100)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -38,9 +38,12 @@ class Order(models.Model) :
     is_ordered = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self) :
+        return self.user.username
+    
 class OrderProduct(models.Model) : 
     order = models.ForeignKey(Order , on_delete=models.CASCADE)
-    Payment = models.ForeignKey(Payment , on_delete=models.CASCADE)
+    Payment = models.ForeignKey(Payment , on_delete=models.CASCADE , null=True)
     user = models.ForeignKey(User , on_delete=models.CASCADE)
     product = models.ForeignKey(Product , on_delete=models.CASCADE)
     quantity = models.IntegerField()
